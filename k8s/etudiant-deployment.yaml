@@ -1,0 +1,58 @@
+# ========================
+# Etudiant API Deployment
+# ========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etudiant-api
+  labels:
+    app: etudiant-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etudiant-api
+  template:
+    metadata:
+      labels:
+        app: etudiant-api
+    spec:
+      containers:
+        - name: etudiant-api
+          image: zouzcontainers/etudiant-service:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/etudiants_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "postgres123"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "localhost"
+            - name: SPRING_CACHE_TYPE
+              value: "none"
+          readinessProbe:
+            httpGet:
+              path: /api/etudiants
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+---
+# ========================
+# Etudiant API Service (NodePort — accessible depuis l'extérieur)
+# ========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: etudiant-api-service
+spec:
+  selector:
+    app: etudiant-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

@@ -24,6 +24,22 @@ services:
       retries: 10
 
   # ========================
+  # Service Redis (Cache)
+  # ========================
+  redis:
+    image: redis:7-alpine
+    container_name: redis-etudiants
+    ports:
+      - "6379:6379"
+    networks:
+      - etudiants-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ========================
   # Service API Spring Boot
   # ========================
   api:
@@ -37,8 +53,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/etudiants_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres123
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_CACHE_TYPE: redis
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - etudiants-network
@@ -52,7 +73,7 @@ networks:
     driver: bridge
 
 # ========================
-# Volume persistant
+# Volumes persistants
 # ========================
 volumes:
   postgres_data:
