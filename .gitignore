@@ -1,0 +1,40 @@
+api-spring-boot/target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Flutter
+mobile-app-flutter/.dart_tool/
+mobile-app-flutter/.packages
+mobile-app-flutter/build/
+mobile-app-flutter/.flutter-plugins
+mobile-app-flutter/.flutter-plugins-dependencies
+mobile-app-flutter/android/.gradle/
+mobile-app-flutter/android/app/build/
+mobile-app-flutter/ios/Pods/
+mobile-app-flutter/ios/.symlinks/
+
+# React Native
+mobile-app-reactnative/node_modules/
+mobile-app-reactnative/android/build/
+mobile-app-reactnative/android/app/build/
+mobile-app-reactnative/android/.gradle/
+mobile-app-reactnative/ios/Pods/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres_data/
+
+# Logs
+*.log
