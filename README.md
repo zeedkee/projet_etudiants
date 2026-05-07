@@ -127,7 +127,17 @@ Le projet est organisé en méthodologie Scrum avec deux sprints.
 ## Branches Git
 
 - `main` : Code stable de la Partie 1
-- `version-2` : Enrichissements de la Partie 2
+- `version-2` : Enrichissements de la Partie 1
+- `version-3` : Enrichissements de la Partie 2
+
+## Conventions de Review
+
+- Toute Pull Request doit être relue dans un délai de **48 heures**
+- Au minimum **1 approbation** est requise avant le merge
+- Les commentaires **bloquants** (request changes) doivent être résolus avant le merge
+- Chaque PR doit référencer un ticket Jira dans la description
+- Les tests doivent passer et le `docker-compose up --build` doit fonctionner
+- Le reviewer vérifie : qualité du code, tests, documentation Swagger, et structure des packages
 
 ## Auteur
 

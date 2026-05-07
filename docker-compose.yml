@@ -1,22 +1,20 @@
-version: "3.8"
-
 services:
   # ========================
-  # Service Base de données
+  # Base de données PostgreSQL
   # ========================
-  db:
+  postgres:
     image: postgres:16-alpine
     container_name: postgres-etudiants
     environment:
-      POSTGRES_DB: etudiants_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
-      - etudiants-network
+      - projet-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -24,7 +22,7 @@ services:
       retries: 10
 
   # ========================
-  # Service Redis (Cache)
+  # Redis Cache
   # ========================
   redis:
     image: redis:7-alpine
@@ -32,7 +30,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - etudiants-network
+      - projet-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -40,40 +38,108 @@ services:
       retries: 10
 
   # ========================
-  # Service API Spring Boot
+  # Eureka Server
   # ========================
-  api:
-    build:
-      context: ./api-spring-boot
-      dockerfile: Dockerfile
-    container_name: api-etudiants
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
     ports:
-      - "8080:8080"
+      - "8761:8761"
+    networks:
+      - projet-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ========================
+  # Etudiant Service
+  # ========================
+  etudiant-service:
+    build: ./api-spring-boot
+    container_name: etudiant-service
+    ports:
+      - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/etudiants_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/etudiants_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres123
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_CACHE_TYPE: redis
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SERVER_PORT: 8081
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
-      - etudiants-network
+      - projet-network
     restart: on-failure
 
-# ========================
-# Réseau partagé
-# ========================
+  # ========================
+  # Grading Service
+  # ========================
+  grading-service:
+    build: ./grading-service
+    container_name: grading-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/grading_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SERVER_PORT: 8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - projet-network
+    restart: on-failure
+
+  # ========================
+  # API Gateway
+  # ========================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - projet-network
+    restart: on-failure
+
+  # ========================
+  # Frontend Next.js
+  # ========================
+  frontend:
+    build: ./frontend
+    container_name: frontend-nextjs
+    ports:
+      - "3000:3000"
+    environment:
+            NEXT_PUBLIC_API_URL: http://localhost:8080/api
+    depends_on:
+      - api-gateway
+    networks:
+      - projet-network
+
 networks:
-  etudiants-network:
+  projet-network:
     driver: bridge
 
-# ========================
-# Volumes persistants
-# ========================
 volumes:
   postgres_data:
