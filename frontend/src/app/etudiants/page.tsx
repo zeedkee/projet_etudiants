@@ -44,7 +44,7 @@ export default function EtudiantsPage() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="bg-white rounded-xl shadow overflow-hidden" data-testid="etudiant-list">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -58,7 +58,7 @@ export default function EtudiantsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {etudiants.map((e) => (
-              <tr key={e.id} className="hover:bg-gray-50">
+              <tr key={e.id} className="hover:bg-gray-50" data-testid="etudiant-item">
                 <td className="px-6 py-4 font-mono text-sm text-indigo-600">{e.cin}</td>
                 <td className="px-6 py-4 font-semibold">{e.nom}</td>
                 <td className="px-6 py-4 text-gray-500">{e.dateNaissance}</td>
@@ -76,6 +76,7 @@ export default function EtudiantsPage() {
                     Modifier
                   </Link>
                   <button onClick={() => deleteEtudiant(e.id)}
+                    data-testid="delete-btn"
                     className="text-red-500 hover:text-red-700 text-sm font-medium">
                     Supprimer
                   </button>

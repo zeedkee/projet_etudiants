@@ -38,3 +38,16 @@ postgres_data/
 
 # Logs
 *.log
+# Auth service
+auth-service/node_modules/
+auth-service/.env
+
+# Cypress
+frontend/cypress/videos/
+frontend/cypress/screenshots/
+
+# Gatling
+api-spring-boot/target/gatling/
+
+# JaCoCo
+api-spring-boot/target/site/

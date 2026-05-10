@@ -1,6 +1,6 @@
 services:
   # ========================
-  # Base de données PostgreSQL
+  # PostgreSQL
   # ========================
   postgres:
     image: postgres:16-alpine
@@ -22,7 +22,7 @@ services:
       retries: 10
 
   # ========================
-  # Redis Cache
+  # Redis
   # ========================
   redis:
     image: redis:7-alpine
@@ -36,6 +36,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # ========================
+  # MongoDB (NOUVEAU)
+  # ========================
+  mongodb:
+    image: mongo:7
+    container_name: mongodb-auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - projet-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ========================
   # Eureka Server
@@ -123,6 +141,25 @@ services:
     restart: on-failure
 
   # ========================
+  # Auth Service (NOUVEAU)
+  # ========================
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/authdb
+      JWT_SECRET: super_secret_jwt_key_for_production
+      PORT: 3001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - projet-network
+    restart: on-failure
+
+  # ========================
   # Frontend Next.js
   # ========================
   frontend:
@@ -131,7 +168,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-            NEXT_PUBLIC_API_URL: http://localhost:8080/api
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api
     depends_on:
       - api-gateway
     networks:
@@ -143,3 +180,4 @@ networks:
 
 volumes:
   postgres_data:
+  mongodb_data:

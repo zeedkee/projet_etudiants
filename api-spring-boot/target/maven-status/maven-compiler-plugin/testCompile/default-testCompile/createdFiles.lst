@@ -1,2 +1,4 @@
-com/example/etudiants/bdd/CucumberTest.class
 com/example/etudiants/bdd/EtudiantAgeSteps.class
+com/example/etudiants/unit/EtudiantServiceTest.class
+com/example/etudiants/bdd/CucumberTest.class
+com/example/etudiants/integration/EtudiantIntegrationTest.class
