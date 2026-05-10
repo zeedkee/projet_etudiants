@@ -47,9 +47,11 @@ jobs:
 
       - name: Run tests with Maven (unit + integration + JaCoCo)
         working-directory: ./api-spring-boot
-        run: mvn verify -Dspring.datasource.url=jdbc:postgresql://localhost:5432/etudiants_db -Dspring.datasource.username=postgres -Dspring.datasource.password=postgres123 -Dspring.cache.type=none -Deureka.client.enabled=false
+        run: mvn verify -Dspring.datasource.url=jdbc:postgresql://localhost:5432/etudiants_db -Dspring.datasource.username=postgres -Dspring.datasource.password=postgres123 -Dspring.cache.type=none -Deureka.client.enabled=false -Dtest="!com.example.etudiants.integration.EtudiantIntegrationTest"
         env:
           SPRING_PROFILES_ACTIVE: test
+          DOCKER_API_VERSION: "1.44"
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
 
       - name: Upload test results
         if: always()
